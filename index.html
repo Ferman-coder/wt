@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,603;1,603&display=swap');
+        * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        }
+        body {
+         font-family: 'Montserrat', 'sans-serif';
+         font-weight: 18px;
+         color: var(--tg-theme-text-color);
+         background: var(--tg-theme-bg-color);
+    }
+        #main{
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            display: none;
+
+        }
+        h1{
+            margin-top: 50px;
+            margin-bottom: 10px;
+
+        }
+        p{
+            width: 350px;
+            margin: 0, auto;
+        }
+        /* button{
+            border: 0;
+            border-radius: 5px;
+            margin-top: 50px;
+            height: 60px;
+            width: 200px;
+            font-size: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 500ms ease;
+            color: var(--tg-theme-button-color);
+            background: var(--tg-theme-button-text-color);
+        } */
+    
+        button:hover{
+            background: var(--tg-theme-secondary-bg-color);
+        }
+        #form{
+            display: none;
+            text-align: center;
+        }
+        input{
+            width: 90%;
+            outline: none;
+            margin: 10px 5%;
+            padding: 15px 10px;
+            font-size: 14px;
+            border: 2px solid silver;
+            border-radius: 5px;
+        }
+        input:focus{
+            border-color: #db5d5d;
+        }
+        .container{
+            max-width: 390px;
+        }
+        .inner{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+
+            grid-template-rows: 230px 230px 230px;
+        }
+        .img {
+	width: 100px;
+    margin-top: 40px;
+}
+        .item {
+	text-align: center;
+}
+         .btn {
+	display: inline-block;
+	padding: 10px 20px;
+	border: none;
+	background: rgb(248, 168, 24);
+	border-radius: 10px;
+	color: #fff;
+	text-transform: uppercase;
+	font-weight: 700;
+	transition: background .2s linear;
+}
+.btn:hover {
+	background: lightgreen;
+}
+.usercard {
+	text-align: center;
+}
+    </style>
+</head>
+<body>
+  <div class="container">
+    <div class="inner">
+        <div class="item" id="item1"><img src="burger.png" alt="" class="img"><button class="btn" id="btn1">Добавить</button></div>
+        <div class="item" id="item2"><img src="burger.png" alt="" class="img"><button class="btn" id="btn2">Добавить</button></div>
+        <div class="item" id="item3"><img src="burger.png" alt="" class="img"><button class="btn" id="btn3">Добавить</button></div>
+        <div class="item" id="item4" ><img src="burger.png" alt="" class="img"><button class="btn" id="btn4">Добавить</button></div>
+        <div class="item" id="item5"><img src="burger.png" alt="" class="img"><button class="btn" id="btn5">Добавить</button></div>
+        <div class="item" id="item6"><img src="burger.png" alt="" class="img"><button class="btn" id="btn6">Добавить</button></div>
+    </div>
+  </div>
+  <div class="usercard" id="usercard"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+ <div id = "main">
+     <h1>Онлайн Магазин</h1>
+     <p>Проверка текст</p>
+     <button id = "buy">Купить</button>
+
+ </div>
+ <form id = "form">
+  <input type="text" placeholder="Имя" id="user_name">
+  <input type="text" placeholder="Email" id="user_email">
+  <input type="text" placeholder="Телефон" id="user_phone">
+  <div id = "error"></div>
+  <button id = "order">Оформить</button>
+ </form>
+ <script src="https://telegram.org/js/telegram-web-app.js"></script>
+ <script>
+    let tg = window.Telegram.WebApp;
+    let buy = document.getElementById("buy");
+    let order = document.getElementById("order");
+    tg.expand();
+
+    let items = []
+    function toggleItem(btn, itemId, price){
+        let item  = items.find(i => i.id === itemId);
+        if(!item){
+            let newItem = {id: itemId, price: price};
+            items.push(newItem);
+            btn.classList.add('added-to-cart');
+            btn.innerText = "Удалить из корзины";
+            let totalPrice = items.reduce((total, item) => total + item.price , 0);
+            if(totalPrice > 0){
+                tg.MainButton.setText(`Общая цена товаров ${totalPrice}`);
+                if(!tg.MainButton.isVisible){
+                    
+                    tg.MainButton.show();
+                }}
+                else{
+                    tg.MainButton.hide();
+                }
+
+            }
+            else{
+                let index = items.indexOf(item);
+                items.splice(index, 1);
+                btn.classList.remove('added-to-cart');
+                btn.innerText = "Добавить в корзину";
+                let totalPrice = items.reduce((total, item) => total + item.price , 0);
+                if(totalPrice > 0){
+                 tg.MainButton.setText(`Общая цена товаров ${totalPrice}`);   
+                 if(!tg.MainButton.isVisible){
+                    tg.MainButton.show();
+                 }}
+                 else{
+                    tg.MainButton.hide();
+                 }
+                }
+            
+        
+    }
+    Telegram.WebApp.onEvent("mainButtonClicked", function(){
+        let data = {
+            items: items,
+            totalPrice: calculateTotalPrice()
+        };
+        tg.sendData(JSON.stringify(data));
+    });
+    function calculateTotalPrice(){
+        return items.reduce((total, item) => total + item.price, 0 );
+
+    }
+    document.getElementById("btn1").addEventListener("click", function(){
+        toggleItem(this, "item1", 15010);
+    });
+    document.getElementById("btn2").addEventListener("click", function(){
+        toggleItem(this, "item2", 15050);
+    });
+    document.getElementById("btn3").addEventListener("click", function(){
+        toggleItem(this, "item3", 15040);
+    });
+    document.getElementById("btn4").addEventListener("click", function(){
+        toggleItem(this, "item4", 15030);
+    });
+    document.getElementById("btn5").addEventListener("click", function(){
+        toggleItem(this, "item5", 15020);
+    });
+    document.getElementById("btn6").addEventListener("click", function(){
+        toggleItem(this, "item6", 15020);
+    });
+ </script>
+
+</body>
+</html>
